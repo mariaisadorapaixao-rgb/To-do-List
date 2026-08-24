@@ -1,6 +1,8 @@
 const formTarefa = document.getElementById('formTarefa');
 const inputTarefa = document.getElementById('inputTarefa');
 const listaTarefas = document.getElementById('listaTarefas');
+const selecionarTudo = document.getElementById('selecionarTudo');
+const btnExcluirSelecionadas = document.getElementById('btnExcluirSelecionadas');
 
 formTarefa.addEventListener('submit', function (event) {
   event.preventDefault();
@@ -32,6 +34,7 @@ function criarTarefa(texto) {
 
   checkbox.addEventListener('change', function () {
     span.classList.toggle('concluida', checkbox.checked);
+    atualizarSelecionarTudo();
   });
 
   const botaoRemover = document.createElement('button');
@@ -42,6 +45,7 @@ function criarTarefa(texto) {
   botaoRemover.addEventListener('click', function () {
     li.remove();
     verificarListaVazia();
+    atualizarSelecionarTudo();
   });
 
   tarefa.appendChild(checkbox);
@@ -52,6 +56,47 @@ function criarTarefa(texto) {
   listaTarefas.appendChild(li);
   verificarListaVazia();
 }
+
+  function atualizarSelecionarTudo() {
+    if (!selecionarTudo) return;
+    const checkboxes = listaTarefas.querySelectorAll('li input[type="checkbox"]');
+    if (checkboxes.length === 0) {
+      selecionarTudo.checked = false;
+      return;
+    }
+    const allChecked = Array.from(checkboxes).every(cb => cb.checked);
+    selecionarTudo.checked = allChecked;
+  }
+
+  if (btnExcluirSelecionadas) {
+    btnExcluirSelecionadas.addEventListener('click', function () {
+      const checkeds = listaTarefas.querySelectorAll('li input[type="checkbox"]:checked');
+      if (checkeds.length === 0) {
+        alert('Nenhuma tarefa selecionada.');
+        return;
+      }
+      if (!confirm(`Excluir ${checkeds.length} tarefa(s) selecionada(s)?`)) return;
+      Array.from(checkeds).forEach(cb => {
+        const li = cb.closest('li');
+        if (li) li.remove();
+      });
+      verificarListaVazia();
+      atualizarSelecionarTudo();
+    });
+  }
+
+  if (selecionarTudo) {
+    selecionarTudo.addEventListener('change', function () {
+      const checkboxes = listaTarefas.querySelectorAll('li input[type="checkbox"]');
+      Array.from(checkboxes).forEach(cb => {
+        cb.checked = selecionarTudo.checked;
+        const li = cb.closest('li');
+        const span = li ? li.querySelector('.tarefa-texto') : null;
+        if (span) span.classList.toggle('concluida', cb.checked);
+      });
+      atualizarSelecionarTudo();
+    });
+  }
 
 function verificarListaVazia() {
   const itens = listaTarefas.querySelectorAll('li');
